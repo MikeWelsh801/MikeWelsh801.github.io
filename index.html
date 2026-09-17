@@ -1416,7 +1416,10 @@ function pad(s,n){ s=String(s); while(s.length<n) s+=' '; return s; }
 
 var CMDS = {
   help:{ d:'list commands', f:function(){
-    var rows=Object.keys(CMDS).filter(function(k){return !CMDS[k].hidden;}).map(function(k){return '  <span class="k">'+pad(k+(CMDS[k].a?' '+CMDS[k].a:''),22)+'</span>'+esc(CMDS[k].d);});
+    var keys=Object.keys(CMDS).filter(function(k){return !CMDS[k].hidden;});
+    var sig=function(k){return k+(CMDS[k].a?' '+CMDS[k].a:'');};
+    var col=keys.reduce(function(n,k){return Math.max(n,sig(k).length);},0)+3;
+    var rows=keys.map(function(k){return '  <span class="k">'+esc(pad(sig(k),col))+'</span>'+esc(CMDS[k].d);});
     print(rows.join('\n')+'\n<span class="d">  Repo names take prefixes: "open log" finds log_view. Anything you type here stays in this tab. Do not mention the other editor.</span>');
   }},
   ls:{ a:'[-l]', d:'list cartridges', f:function(args){
@@ -1453,7 +1456,7 @@ var CMDS = {
     if(!hits.length){ say('no matches','d'); return; }
     print(hits.map(function(r){return '<span class="w">'+esc(r.name)+'</span>'+(r.description?' <span class="d">— '+esc(r.description)+'</span>':'');}).join('\n'));
   }},
-  sort:{ a:'stars|pushed|created|name|size', d:'re-sort the cartridge grid', f:function(args){
+  sort:{ a:'<key>', d:'re-sort the grid: stars, pushed, created, name, size', f:function(args){
     var k=(args[0]||'').toLowerCase(); if(!SORTS[k]){ say('sort by: '+Object.keys(SORTS).join(', '),'e'); return; }
     return sortCarts(k).then(function(){ say('sorted by '+k); scrollToId('carts'); });
   }},
@@ -1490,7 +1493,7 @@ var CMDS = {
     var R=['<span class="w">'+esc(u.login)+'</span>@gameshark','─────────────────','OS: GameShark Pro v3.3','Host: '+esc(u.company||'independent'),'Shell: this one','Repos: '+S.repos.length+'   Stars: '+S.stars,'Langs: '+esc((S.declared||S.langs).slice(0,4).join(' '))];
     print(L.map(function(l,i){return '<span class="k">'+l+'</span>   '+(R[i]||'');}).join('\n')+'\n<span class="k">'+L[5]+'</span>   '+R[6]);
   }},
-  theme:{ a:'eyecancer|default', d:'switch the palette', f:function(args){
+  theme:{ a:'<name>', d:'switch the palette: eyecancer or default', f:function(args){
     var want=(args[0]||'').toLowerCase(), on=document.body.classList.contains('eyecancer');
     if(!want){ say('theme is '+(on?'eyecancer':'default')); return; }
     if((want==='default'||want==='off')&&!on){ say('already default'); return; }
