@@ -453,10 +453,19 @@ body.eyecancer .readout .status b{visibility:visible;animation:none}
 .console .out .stache{display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 4px rgba(77,255,124,.6))}
 .console form{display:flex;gap:.5rem;align-items:center;padding:.4rem clamp(16px,4vw,40px) .8rem;border-top:1px solid var(--phos-dim)}
 .console form label{color:var(--gold);white-space:nowrap}
+.console .inwrap{flex:1;position:relative;min-width:0;display:flex}
 .console input{
-  flex:1;background:none;border:0;outline:0;color:#fff;font:inherit;text-shadow:inherit;caret-color:var(--phos);
-  min-width:0;
+  flex:1;background:none;border:0;outline:0;color:#fff;font:inherit;text-shadow:inherit;caret-color:transparent;
+  min-width:0;padding:0;margin:0;
 }
+.console input::selection{background:var(--phos-dim);color:#fff}
+.console .caret{
+  position:absolute;top:50%;left:0;transform:translateY(-50%);pointer-events:none;
+  display:inline-block;width:.6em;height:1.15em;line-height:1.15em;text-align:center;
+  background:var(--phos);color:#000;text-shadow:none;
+  animation:blink 1.1s steps(2,end) infinite;
+}
+.console:not(.open) .caret,.console .caret.off{visibility:hidden;animation:none}
 .console .hint{color:var(--phos-dim);font-size:1rem;white-space:nowrap}
 .cart.flash{animation:flash .9s steps(2,end) 3}
 @keyframes flash{50%{box-shadow:inset 2px 2px 0 rgba(255,255,255,.14),inset -2px -2px 0 rgba(0,0,0,.6),7px 7px 0 var(--gold),0 0 0 4px var(--gold)}}
@@ -536,7 +545,7 @@ body.eyecancer .readout .status b{visibility:visible;animation:none}
   <div class="out" id="con-out"></div>
   <form id="con-form" autocomplete="off">
     <label for="con-in" id="con-prompt">player1@gameshark:~$</label>
-    <input id="con-in" type="text" spellcheck="false" autocapitalize="off" aria-label="Console command">
+    <span class="inwrap"><input id="con-in" type="text" spellcheck="false" autocapitalize="off" aria-label="Console command"><span class="caret" id="con-caret" aria-hidden="true">&nbsp;</span></span>
     <span class="hint">TAB completes · ↑↓ history · ESC closes</span>
   </form>
 </aside>
@@ -1399,7 +1408,7 @@ function link(href, text){ return '<a href="'+esc(href)+'" target="_blank" rel="
 function openConsole(){
   con.classList.add('open'); con.setAttribute('aria-hidden','false'); $('con-btn').setAttribute('aria-expanded','true');
   if(!booted){ booted=true; boot(); }
-  setTimeout(function(){ inp.focus(); },60);
+  setTimeout(function(){ inp.focus(); placeCaret(); },60);
 }
 function closeConsole(){ con.classList.remove('open'); con.setAttribute('aria-hidden','true'); $('con-btn').setAttribute('aria-expanded','false'); inp.blur(); }
 function toggleConsole(){ con.classList.contains('open') ? closeConsole() : openConsole(); }
@@ -1564,7 +1573,25 @@ function complete(){
   if(hits.length===1){ parts[parts.length-1]=hits[0]; inp.value=parts.join(' ')+' '; }
   else if(hits.length>1){ print(hits.join('  '),'d'); var common=hits.reduce(function(a,b){var i=0;while(i<a.length&&a[i].toLowerCase()===b[i].toLowerCase())i++;return a.slice(0,i);}); if(common.length>q.length){ parts[parts.length-1]=common; inp.value=parts.join(' '); } }
 }
-$('con-form').addEventListener('submit',function(e){ e.preventDefault(); var v=inp.value; inp.value=''; run(v); });
+/* block cursor: measure the text up to the caret in the input's own font */
+var caretEl=$('con-caret'), measure=document.createElement('canvas').getContext('2d');
+function placeCaret(){
+  var cs=getComputedStyle(inp); measure.font=cs.fontStyle+' '+cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
+  var pos=inp.selectionStart==null?inp.value.length:inp.selectionStart;
+  var x=measure.measureText(inp.value.slice(0,pos)).width-inp.scrollLeft;
+  var ch=inp.value.charAt(pos);
+  caretEl.textContent=ch||'\u00a0';
+  caretEl.style.width=(ch?measure.measureText(ch).width:measure.measureText('M').width)+'px';
+  caretEl.style.left=Math.max(0,x)+'px';
+  caretEl.classList.toggle('off', document.activeElement!==inp);
+  /* restart the blink so it's solid while typing */
+  caretEl.style.animation='none'; void caretEl.offsetWidth; caretEl.style.animation='';
+}
+['input','keyup','click','focus','blur','select'].forEach(function(ev){ inp.addEventListener(ev,placeCaret); });
+document.addEventListener('selectionchange',function(){ if(document.activeElement===inp) placeCaret(); });
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(placeCaret);
+placeCaret();
+$('con-form').addEventListener('submit',function(e){ e.preventDefault(); var v=inp.value; inp.value=''; run(v); placeCaret(); });
 inp.addEventListener('input',function(){
   var v=inp.value, c=v.replace(/vs\s?code/gi,function(m){return m.slice(0,2)+'c*de';});
   if(c!==v){ inp.value=c; }
