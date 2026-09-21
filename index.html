@@ -1646,7 +1646,7 @@ function boot(){
   print('<span class="k">GAMESHARK PRO v3.3</span> <span class="d">— code console</span>');
   say('Loading save file from GitHub…','d');
   S.ready.then(function(){
-    print('Welcome, <span class="w">'+esc(S.user.login)+'</span>. '+S.repos.length+' cartridges loaded, '+S.stars+' stars. Type <span class="k">help</span> to see what this thing does.');
+    print('Welcome, <span class="w">'+esc(S.user.login)+'</span>. '+S.repos.length+' cartridges loaded, '+S.stars+' stars. Type <span class="k">help</span> to see what this thing does, or type the name of your editor and see what I think of it.');
   }).catch(function(e){ say('Could not reach GitHub: '+e.message,'e'); });
 }
 function scrollToId(id){ var el=$(id); if(!el) return false; el.scrollIntoView({behavior:'smooth',block:'start'}); return true; }
@@ -1659,7 +1659,7 @@ var CMDS = {
     var sig=function(k){return k+(CMDS[k].a?' '+CMDS[k].a:'');};
     var col=keys.reduce(function(n,k){return Math.max(n,sig(k).length);},0)+3;
     var rows=keys.map(function(k){return '  <span class="k">'+esc(pad(sig(k),col))+'</span>'+esc(CMDS[k].d);});
-    print(rows.join('\n')+'\n<span class="d">  Repo names take prefixes: "open log" finds log_view. Anything you type here stays in this tab. Do not mention the other editor. There is a door in here somewhere.</span>');
+    print(rows.join('\n')+'\n<span class="d">  Repo names take prefixes: "open log" finds log_view. Anything you type here stays in this tab. Also: type the name of your text editor. Any of them. Go on. There is a door in here somewhere, too.</span>');
   }},
   ls:{ a:'[-l]', d:'list cartridges', f:function(args){
     var long=args[0]==='-l';
@@ -1759,6 +1759,38 @@ var CMDS = {
   vim:{ hidden:true, f:function(){ say('You are already in vim. Always have been. :q! to leave.'); }},
   nvim:{ hidden:true, f:function(){ return CMDS.vim.f(); }},
   emacs:{ hidden:true, f:function(){ say('Respectable. Odd, but respectable. Your pinky is in our thoughts.'); }},
+  vi:{ hidden:true, f:function(){ say('Acceptable. nvim is right there, though. It has colors.'); }},
+  ed:{ hidden:true, f:function(){ say('?','e'); setTimeout(function(){ say('ed is the standard text editor.','d'); },900); }},
+  nano:{ hidden:true, f:function(){ say('The editor you use when you\'re SSHed into prod and scared. It\'s okay. We\'ve all been there. ^X to leave.'); }},
+  sublime:{ hidden:true, f:function(){ say('Sublime Text. That "unregistered" popup has been asking politely since 2011. Pay the man or close the tab.'); }},
+  subl:{ hidden:true, f:function(a){ return CMDS.sublime.f(a); }},
+  atom:{ hidden:true, f:function(){ say('atom: command not found','e'); setTimeout(function(){ say('Atom was sunset in 2022. You\'re talking to a ghost, and the ghost is using 1.4 GB of RAM.','d'); },700); }},
+  'notepad++':{ hidden:true, f:function(){ say('Notepad++: a fine tool for fixing one .ini file on someone else\'s Windows box. Blink twice if you\'re on someone else\'s Windows box.'); }},
+  notepad:{ hidden:true, f:function(){ say('No plus plus. Bold. Word Wrap is under Format, and I\'m told that\'s the whole feature list.'); }},
+  intellij:{ hidden:true, f:function(){ say('Indexing…','d'); setTimeout(function(){ say('Indexing…','d'); },800); setTimeout(function(){ say('Your laptop fan would like to speak to a manager.'); },1700); }},
+  jetbrains:{ hidden:true, f:function(a){ return CMDS.intellij.f(a); }},
+  pycharm:{ hidden:true, f:function(a){ return CMDS.intellij.f(a); }},
+  clion:{ hidden:true, f:function(a){ return CMDS.intellij.f(a); }},
+  rider:{ hidden:true, f:function(a){ return CMDS.intellij.f(a); }},
+  webstorm:{ hidden:true, f:function(a){ return CMDS.intellij.f(a); }},
+  eclipse:{ hidden:true, f:function(){ say('Workspace in use or cannot be created, choose a different one.','e'); setTimeout(function(){ say('That\'s not a joke. That\'s just Eclipse.','d'); },900); }},
+  netbeans:{ hidden:true, f:function(){ say('NetBeans. Someone made you. A professor, probably. Are you okay?'); }},
+  xcode:{ hidden:true, f:function(){ say('Xcode: 40 GB to edit a text file. An update is ready to install. It is also 40 GB.'); }},
+  visualstudio:{ hidden:true, f:function(){ say('Visual Studio, no code. The big one. You\'re shipping C# for a living and you\'ve made peace with it. Respect. Close the twelve toolbar rows.'); }},
+  helix:{ hidden:true, f:function(){ say('Helix: vim keybindings, but backwards, so you can feel like a beginner again on purpose.'); }},
+  hx:{ hidden:true, f:function(a){ return CMDS.helix.f(a); }},
+  kakoune:{ hidden:true, f:function(){ say('Kakoune. You\'re one of eleven. The other ten also mention it unprompted.'); }},
+  kak:{ hidden:true, f:function(a){ return CMDS.kakoune.f(a); }},
+  gedit:{ hidden:true, f:function(){ say('gedit. Honestly fine. Boring, but fine. Like oatmeal.'); }},
+  kate:{ hidden:true, f:function(){ say('Kate. The KDE people made one good editor and then named it like a coworker. Fine. Also oatmeal.'); }},
+  micro:{ hidden:true, f:function(){ say('micro: nano for people who read one Hacker News thread. Ctrl-Q to leave, which is honestly an improvement.'); }},
+  fleet:{ hidden:true, f:function(){ say('Fleet. JetBrains made a lightweight editor. It is indexing.'); }},
+  brackets:{ hidden:true, f:function(){ say('Brackets. Adobe made a text editor once. Then they remembered they were Adobe.'); }},
+  textmate:{ hidden:true, f:function(){ say('TextMate. The bundles were good. Everyone left. The bundles are still good.'); }},
+  bbedit:{ hidden:true, f:function(){ say('BBEdit. It doesn\'t suck. That was the whole slogan and they meant it. Grudging respect.'); }},
+  dreamweaver:{ hidden:true, f:function(){ say('Dreamweaver. Blink twice if you are being held against your will in 2004.','e'); }},
+  word:{ hidden:true, f:function(){ say('Microsoft Word is not a text editor and the smart quotes in your config file agree.','e'); }},
+  copilot:{ hidden:true, f:function(){ say('Ask it what the Konami code is.','d'); }},
   cursor:{ hidden:true, f:function(){
     say('cursor: you want a tool that writes the code for you, on a page that a robot built.','e');
     setTimeout(function(){ say('Ask it what the Konami code is. Ask it what a Konami code is.','d'); },1800);
@@ -1795,6 +1827,8 @@ function run(line){
   }
   print(esc(line),'cmd'); hist.push(line); hpos=hist.length;
   var parts=line.split(/\s+/), name=parts[0].toLowerCase(), args=parts.slice(1);
+  if(name==='sublime'&&/^text$/i.test(args[0]||'')) args.shift();
+  if(name==='visual'&&/^studio$/i.test(args[0]||'')){ name='visualstudio'; args.shift(); }
   var cmd=CMDS[name];
   if(!cmd){ say(name+': command not found. try help','e'); return; }
   var go=function(){ try{ return Promise.resolve(cmd.f(args)); }catch(e){ return Promise.reject(e); } };
